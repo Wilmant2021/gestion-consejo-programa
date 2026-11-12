@@ -1,0 +1,71 @@
+========================================================================
+ GUÍA TÉCNICA: CONFIGURACIÓN Y DESPLIEGUE DE ASP.NET CORE CON AZURE SQL
+========================================================================
+
+1. CREACIÓN DEL PROYECTO WEB API (ASP.NET CORE)
+------------------------------------------------------------------------
+Para inicializar el proyecto desde la terminal, ejecuta:
+* Comando: dotnet new webapi -n NombreDelProyecto
+* Entrar a la carpeta del proyecto: cd NombreDelProyecto
+
+
+2. CONFIGURACIÓN DE PAQUETES NUGET (EF CORE Y SQL SERVER)
+------------------------------------------------------------------------
+Asegúrate de tener instalados los paquetes necesarios para Entity Framework Core:
+* dotnet add package Microsoft.EntityFrameworkCore.SqlServer
+* dotnet add package Microsoft.EntityFrameworkCore.Design
+* dotnet add package Microsoft.EntityFrameworkCore.Tools
+
+
+3. CONFIGURACIÓN DE LA CADENA DE CONEXIÓN (appsettings.json)
+------------------------------------------------------------------------
+En el archivo appsettings.json, configura la conexión apuntando a tu servidor 
+de Azure SQL. Ejemplo:
+
+{
+  "ConnectionStrings": {
+    "AzureSqlConnection": "Server=tcp:tu-servidor.database.windows.net,1433;Initial Catalog=PlataformaConsejosDB;Persist Security Info=False;User ID=sqladmin;Password=TuPasswordReal;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;"
+  }
+}
+
+
+4. REGISTRO DEL DBCONTEXT EN (Program.cs)
+------------------------------------------------------------------------
+Registra el contexto de base de datos en el contenedor de dependencias:
+
+builder.Services.AddDbContext<TuDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("AzureSqlConnection")));
+
+
+5. CONFIGURACIÓN DEL SERVIDOR Y REDES EN AZURE (Portal de Azure)
+------------------------------------------------------------------------
+- Crear el servidor SQL y la base de datos (Ej: PlataformaConsejosDB).
+- En la configuración de Autenticación del Servidor, activar: 
+  "Uso de la autenticación de SQL y Microsoft Entra".
+- En la sección de "Redes" (Networking) del Servidor SQL:
+  * Permitir acceso a la red pública (Redes seleccionadas o Habilitado).
+  * Hacer clic en "Agregar la dirección IPv4 del cliente" para autorizar tu IP local.
+  * Guardar los cambios.
+
+
+6. GESTIÓN DE MIGRACIONES Y BASE DE DATOS (Terminal / CLI)
+------------------------------------------------------------------------
+Asegúrate de tener la herramienta de EF Core instalada globalmente:
+* Instalar/Actualizar: dotnet tool update --global dotnet-ef
+
+Paso A: Crear los archivos de migración basados en tus entidades y DbContext:
+* dotnet ef migrations add InitialCreate
+
+Paso B: Aplicar las migraciones e impactar/crear las tablas físicamente en Azure SQL:
+* dotnet ef database update
+
+
+------------------------------------------------------------------------
+Antes de ejecutar las pruebas con swagger se tiene que instalar el paquete, ya que este en las nuevas versiones no viene instalado por defecto
+dotnet add package Swashbuckle.AspNetCore
+
+7. EJECUCIÓN Y PRUEBA DE LA API
+------------------------------------------------------------------------
+Para compilar y correr el servidor de desarrollo local con conexión a la nube:
+* dotnet run
+* Abre la URL de Swagger generada en la consola (ej:  host:7xxx/swagger)

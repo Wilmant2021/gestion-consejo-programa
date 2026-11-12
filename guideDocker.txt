@@ -1,0 +1,179 @@
+====================================================================
+
+           GUÍA RÁPIDA DE DOCKER PARA PROYECTOS (.NET / DB)
+
+====================================================================
+
+
+
+1. ¿QUÉ ES DOCKER Y POR QUÉ USARLO?
+
+--------------------------------------------------------------------
+
+- Docker permite ejecutar aplicaciones y bases de datos dentro de
+
+  "contenedores" aislados y livianos.
+
+- Garantiza que el entorno de desarrollo sea exactamente igual al
+
+  de producción.
+
+- Evita instalar servicios pesados (como SQL Server o Postgres) 
+
+  directamente en Windows, ahorrando espacio en disco y memoria RAM.
+
+
+
+====================================================================
+
+2. CONFIGURACIÓN DEL CONTENEDOR DE SQL SERVER 2022
+
+====================================================================
+
+
+
+Comando para crear y ejecutar el contenedor por primera vez:
+
+
+
+docker run -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=Hacker23." -p 1433:1433 --name sqlserver_db -d mcr.microsoft.com/mssql/server:2022-latest
+
+
+
+Desglose de parámetros:
+
+- -e "ACCEPT_EULA=Y": Acepta los términos de licencia de Microsoft.
+
+- -e "SA_PASSWORD=...": Define la contraseña del usuario administrador 'sa'.
+
+- -p 1433:1433: Mapea el puerto del contenedor al puerto de tu PC.
+
+- --name sqlserver_db: Nombre con el que identificarás al contenedor.
+
+- -d: Corre el contenedor en segundo plano (detached mode).
+
+
+
+--------------------------------------------------------------------
+
+CADENA DE CONEXIÓN (.NET - appsettings.json):
+
+--------------------------------------------------------------------
+
+"ConnectionStrings": {
+
+  "DefaultConnection": "Server=localhost,1433;Database=ModularProfileDb;User Id=sa;Password=Hacker23.;TrustServerCertificate=True;"
+
+}
+
+
+
+* Nota: TrustServerCertificate=True es obligatorio para conectarse 
+
+  a SQL Server en Docker durante desarrollo local.
+
+
+
+====================================================================
+
+3. COMANDOS IMPORTANTES DE DOCKER (DÍA A DÍA)
+
+====================================================================
+
+
+
+--- ESTADO Y LISTADO ---
+
+> Ver contenedores en ejecución:
+
+  docker ps
+
+
+
+> Ver todos los contenedores (incluyendo apagados):
+
+  docker ps -a
+
+
+
+> Ver imágenes descargadas en el equipo:
+
+  docker images
+
+
+
+--- CONTROL DE VIDA DEL CONTENEDOR ---
+
+> Apagar el contenedor (para liberar memoria RAM cuando no programes):
+
+  docker stop sqlserver_db
+
+
+
+> Volver a encender el contenedor existente:
+
+  docker start sqlserver_db
+
+
+
+> Reiniciar el contenedor:
+
+  docker restart sqlserver_db
+
+
+
+--- ADMINISTRACIÓN Y DIAGNÓSTICO ---
+
+> Ver logs y errores del contenedor:
+
+  docker logs sqlserver_db
+
+
+
+> Entrar a la consola interactiva dentro del contenedor:
+
+  docker exec -it sqlserver_db bash
+
+
+
+> Entrar directamente a SQLCmd dentro del contenedor:
+
+  docker exec -it sqlserver_db /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "Hacker23." -C
+
+
+
+--- LIMPIEZA Y ELIMINACIÓN ---
+
+> Eliminar el contenedor (debe estar detenido antes):
+
+  docker rm sqlserver_db
+
+
+
+> Eliminar una imagen descargada:
+
+  docker rmi mcr.microsoft.com/mssql/server:2022-latest
+
+
+
+====================================================================
+
+4. FLUJO DE TRABAJO DIARIO RECOMENDADO
+
+====================================================================
+
+1. Abrir Docker Desktop en Windows.
+
+2. Abrir la terminal y verificar que el contenedor esté corriendo con:
+
+   docker ps
+
+3. Si está detenido, encenderlo con:
+
+   docker start sqlserver_db
+
+4. Trabajar en el proyecto en .NET (ejecutar migraciones, APIs, etc.).
+
+5. Al finalizar el día, detener el contenedor para liberar RAM:
+
+   docker stop sqlserver_db
