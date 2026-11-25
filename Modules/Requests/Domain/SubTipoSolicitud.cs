@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace Modules.Profile.Domain
+namespace Modules.Requests.Domain
 {
     [Table("Sub_tipo_solicitud")]
     public class SubTipoSolicitud

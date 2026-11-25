@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Modules.Profile.Application.DOTs;
 using Modules.Profile.Application.Services;
 
-namespace gestionConsejoProgramaWeb.Controllers
+namespace Modules.Profile.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]

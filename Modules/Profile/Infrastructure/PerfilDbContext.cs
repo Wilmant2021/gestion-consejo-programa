@@ -15,6 +15,7 @@ namespace Plataforma.Modules.Profile.Infrastructure
         public DbSet<UsuarioRol> UsuarioRoles { get; set; }
         public DbSet<Estudiante> Estudiantes { get; set; }
         public DbSet<EstudiantePrograma> EstudianteProgramas { get; set; }
+     
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
