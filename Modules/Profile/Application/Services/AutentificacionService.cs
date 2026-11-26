@@ -2,7 +2,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using Modules.Profile.Application.DOTs;
+using Modules.Profile.Application.DTOs;
 using Modules.Profile.Application.Services;
 using Plataforma.Modules.Profile.Infrastructure;
 
@@ -21,41 +21,47 @@ namespace Modules.Profile.Application.Services
 
         public async Task<UsuarioLoginResponseDto?> LoginAsync(LoginDto dto)
         {
-            // 1. Obtenemos el identity_provider_id simulado actual (ej. de la cabecera HTTP)
+            string correoSolicitado = !string.IsNullOrWhiteSpace(dto.CorreoInstitucional)
+                ? dto.CorreoInstitucional.Trim().ToLowerInvariant()
+                : _currentUserService.GetUserEmail().Trim().ToLowerInvariant();
+
             string currentIdentityProviderId = _currentUserService.GetCurrentIdentityProviderId();
 
-            // 2. Buscar al usuario validando el correo, el IdentityProviderId y que su Estado sea estrictamente "Activo"
             var usuario = await _context.Usuarios
                 .Include(u => u.UsuarioRoles)
                     .ThenInclude(ur => ur.Rol)
                 .Include(u => u.UsuarioRoles)
                     .ThenInclude(ur => ur.Programa)
-                .FirstOrDefaultAsync(u => u.CorreoInstitucional == dto.CorreoInstitucional 
-                                       && u.IdentityProviderId == currentIdentityProviderId 
-                                       && u.Estado == "Activo");
+                .FirstOrDefaultAsync(u => u.CorreoInstitucional.ToLower() == correoSolicitado);
 
             if (usuario == null)
             {
-                // Opcional: Validar si el usuario existe pero su cuenta está inactiva para dar un mensaje específico
-                var usuarioInactivo = await _context.Usuarios
-                    .FirstOrDefaultAsync(u => u.CorreoInstitucional == dto.CorreoInstitucional 
-                                           && u.IdentityProviderId == currentIdentityProviderId 
-                                           && u.Estado == "Inactivo");
-
-                if (usuarioInactivo != null)
-                {
-                    throw new UnauthorizedAccessException("Su cuenta se encuentra inactiva. Contacte al administrador.");
-                }
-
-                return null; // Usuario no encontrado, no registrado o la identidad simulada no coincide
+                return null;
             }
 
-            // 3. Mapear los datos al DTO de respuesta para el frontend
+            if (!string.Equals(usuario.Estado, "Activo", StringComparison.OrdinalIgnoreCase))
+            {
+                throw new UnauthorizedAccessException("Su cuenta se encuentra inactiva. Contacte al administrador.");
+            }
+
+            // En simulación/desarrollo, los IDs autogenerados o locales no deben bloquear el login por cabecera
+            bool esIdSimulado = string.IsNullOrWhiteSpace(usuario.IdentityProviderId)
+                || usuario.IdentityProviderId.StartsWith("sim-", StringComparison.OrdinalIgnoreCase)
+                || usuario.IdentityProviderId.StartsWith("local-user-", StringComparison.OrdinalIgnoreCase)
+                || usuario.IdentityProviderId.StartsWith("local-dev-user-", StringComparison.OrdinalIgnoreCase);
+
+            if (!esIdSimulado
+                && !string.IsNullOrWhiteSpace(currentIdentityProviderId)
+                && usuario.IdentityProviderId != currentIdentityProviderId)
+            {
+                return null;
+            }
+
             var nombreCompleto = $"{usuario.Nombre} {usuario.SegundoNombre ?? ""} {usuario.Apellido} {usuario.SegundoApellido ?? ""}"
                 .Replace("  ", " ")
                 .Trim();
 
-            var response = new UsuarioLoginResponseDto
+            return new UsuarioLoginResponseDto
             {
                 IdUsuario = usuario.IdUsuario,
                 NombreCompleto = nombreCompleto,
@@ -65,11 +71,9 @@ namespace Modules.Profile.Application.Services
                     RolId = ur.IdRol,
                     RolNombre = ur.Rol?.RolNombre ?? string.Empty,
                     ProgramaId = ur.IdPrograma,
-                    ProgramaNombre = ur.Programa?.Nombre // Si es null (rol global), quedará como null
+                    ProgramaNombre = ur.Programa?.Nombre
                 }).ToList()
             };
-
-            return response;
         }
     }
 }

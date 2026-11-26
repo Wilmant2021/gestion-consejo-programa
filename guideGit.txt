@@ -1,0 +1,18 @@
+# 1. Crear develop desde main y subirla
+git checkout main
+git checkout -b develop
+git push -u origin develop
+
+# 2. En el día a día, subes tus avances a develop
+git add .
+git commit -m "feat: cambios en modulo Requests"
+git push origin develop
+
+# 3. Cuando ya esté probado y listo para pasar a main
+git checkout main
+git pull origin main
+git merge develop
+git push origin main
+
+# 4. Vuelves a develop para seguir trabajando
+git checkout develop

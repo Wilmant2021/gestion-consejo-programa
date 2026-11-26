@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace Modules.Profile.Application.DOTs
+namespace Modules.Profile.Application.DTOs
 {
     public class UsuarioLoginResponseDto
     {

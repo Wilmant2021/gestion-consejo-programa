@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Modules.Profile.Application.DOTs;
+using Modules.Profile.Application.DTOs;
 using Modules.Profile.Application.Services;
 
 namespace Modules.Profile.Controllers
@@ -13,15 +13,18 @@ namespace Modules.Profile.Controllers
         private readonly UsuarioService _usuarioService;
         private readonly ProgramaService _programaService;
         private readonly RolService _rolService;
+        private readonly EstudianteService _estudianteService;
 
         public AdministradoresController(
             UsuarioService usuarioService,
             ProgramaService programaService,
-            RolService rolService)
+            RolService rolService,
+            EstudianteService estudianteService)
         {
             _usuarioService = usuarioService;
             _programaService = programaService;
             _rolService = rolService;
+            _estudianteService = estudianteService;
         }
 
         // --- GESTIÓN DE ESTADOS DE USUARIO ---
@@ -63,6 +66,55 @@ namespace Modules.Profile.Controllers
             catch (System.Exception ex)
             {
                 return StatusCode(500, new { mensaje = "Error interno del servidor", error = ex.Message });
+            }
+        }
+
+        [HttpPut("cambiar-rol")]
+        public async Task<IActionResult> CambiarRol([FromBody] CambiarRolUsuarioDto dto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            try
+            {
+                var (ok, mensaje) = await _usuarioService.CambiarRolAsync(dto);
+                if (!ok)
+                {
+                    return BadRequest(new { mensaje });
+                }
+
+                return Ok(new { mensaje });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { mensaje = "Ocurrió un error al cambiar el rol del usuario.", detalle = ex.Message });
+            }
+        }
+
+        //Estudiante
+        [HttpPut("estudiante-programa")]
+        public async Task<IActionResult> ActualizarProgramaEstudiante([FromBody] ActualizarEstudianteProgramaDto dto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            try
+            {
+                var (ok, mensaje) = await _estudianteService.ActualizarProgramaEstudianteAsync(dto);
+                if (!ok)
+                {
+                    return BadRequest(new { mensaje });
+                }
+
+                return Ok(new { mensaje });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { mensaje = "Ocurrió un error al actualizar el programa del estudiante.", detalle = ex.Message });
             }
         }
 

@@ -14,15 +14,32 @@ namespace Plataforma.Modules.Profile.Infrastructure
 
         public string GetCurrentIdentityProviderId()
         {
-            // Simula un ID de identidad local si no se envía una cabecera específica
-            return _httpContextAccessor.HttpContext?.Request.Headers["X-Simulated-User-Id"].FirstOrDefault() 
-                   ?? "local-dev-user-001";
+            var headers = _httpContextAccessor.HttpContext?.Request.Headers;
+            if (headers != null && headers.TryGetValue("X-Simulated-User-Id", out var value))
+            {
+                var trimmed = value.ToString().Trim();
+                if (!string.IsNullOrWhiteSpace(trimmed))
+                {
+                    return trimmed;
+                }
+            }
+
+            return "local-dev-user-001";
         }
 
         public string GetUserEmail()
         {
-            return _httpContextAccessor.HttpContext?.Request.Headers["X-Simulated-User-Email"].FirstOrDefault() 
-                   ?? "usuario.prueba@universidad.edu.co";
+            var headers = _httpContextAccessor.HttpContext?.Request.Headers;
+            if (headers != null && headers.TryGetValue("X-Simulated-User-Email", out var value))
+            {
+                var trimmed = value.ToString().Trim();
+                if (!string.IsNullOrWhiteSpace(trimmed))
+                {
+                    return trimmed;
+                }
+            }
+
+            return "usuario.prueba@universidad.edu.co";
         }
     }
 }

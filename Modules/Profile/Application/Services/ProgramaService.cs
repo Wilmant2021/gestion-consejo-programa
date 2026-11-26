@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using Modules.Profile.Application.DOTs;
+using Modules.Profile.Application.DTOs;
 using Modules.Profile.Application.Services;
 using Modules.Profile.Domain;
 using Plataforma.Modules.Profile.Infrastructure;

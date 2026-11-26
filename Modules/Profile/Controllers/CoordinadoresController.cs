@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using Modules.Profile.Application.DOTs;
+using Modules.Profile.Application.DTOs;
 using Modules.Profile.Application.Services;
 
 namespace Modules.Profile.Controllers

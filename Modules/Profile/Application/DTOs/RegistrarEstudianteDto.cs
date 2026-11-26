@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
-namespace Modules.Profile.Application.DOTs
+namespace Modules.Profile.Application.DTOs
 {
     public class RegistrarEstudianteDto : UsuarioBaseDto
     {
